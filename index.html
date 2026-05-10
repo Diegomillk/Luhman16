@@ -151,19 +151,19 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-famil
   opacity:0;animation:fadeIn .8s 1.4s forwards, hintPulse 2s 1.4s ease-in-out infinite;
 }
 #entry-ring{
-  width:52px;height:52px;border-radius:50%;
-  border:1px solid rgba(201,169,110,.3);
+  width:58px;height:58px;border-radius:50%;
+  border:1px solid var(--dim-gold);
   display:flex;align-items:center;justify-content:center;
   position:relative;
   opacity:0;animation:fadeIn 1s .3s forwards;
 }
 #entry-ring::before,#entry-ring::after{
   content:'';position:absolute;border-radius:50%;
-  border:1px solid rgba(201,169,110,.15);
+  border:1px solid rgba(201,169,110,.2);
   animation:ripple 2.4s ease-out infinite;
 }
-#entry-ring::before{width:72px;height:72px;}
-#entry-ring::after{width:96px;height:96px;animation-delay:.8s;}
+#entry-ring::before{width:80px;height:80px;}
+#entry-ring::after{width:108px;height:108px;animation-delay:.9s;}
 
 /* FINAL */
 #s-final{gap:1.5rem;justify-content:center;padding-bottom:18vh;}
@@ -388,10 +388,12 @@ function showS(id){
   }
 }
 
-/* ── AUTO SEQUENCE ── */
-setTimeout(()=>showS('s-scan'),5500);
-setTimeout(()=>{if(scanRAF)cancelAnimationFrame(scanRAF);showS('s-found');},5500+5800);
-setTimeout(()=>showS('s-l0'),5500+5800+4200);
+/* ── AUTO SEQUENCE — starts only after entry tap ── */
+function startSequence(){
+  setTimeout(()=>showS('s-scan'),5500);
+  setTimeout(()=>{if(scanRAF)cancelAnimationFrame(scanRAF);showS('s-found');},5500+5800);
+  setTimeout(()=>showS('s-l0'),5500+5800+4200);
+}
 
 /* ── TAP TO ADVANCE ── */
 const ORDER=['s-l0','s-l1','s-l2','s-l3','s-l4','s-l5','s-l6','s-closing','s-final'];
@@ -694,6 +696,9 @@ function startClosing(){
   function dismissEntry(){
     entry.classList.add('hide');
     setTimeout(function(){ entry.style.display='none'; }, 2000);
+
+    // Start the auto sequence NOW (not on page load)
+    startSequence();
 
     // Android Chrome: must call play() synchronously inside touch handler
     music.volume = 0;
