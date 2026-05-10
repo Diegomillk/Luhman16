@@ -671,34 +671,49 @@ function startClosing(){
 </script>
 
 <!-- INTERSTELLAR AUDIO -->
-<audio id="bg-music" loop preload="auto"><source src="interstellar.mp3" type="audio/mpeg"></audio>
+<audio id="bg-music" loop preload="auto" playsinline>
+  <source src="interstellar.mp3" type="audio/mpeg">
+</audio>
 <script>
-// ── ENTRY SCREEN + MUSIC ──
 (function(){
   var entry = document.getElementById('s-entry');
   var music = document.getElementById('bg-music');
-  music.volume = 0;
 
   function fadeIn(){
-    var vol = 0;
+    music.volume = 0;
     var fade = setInterval(function(){
-      vol = Math.min(vol + 0.008, 0.5);
-      music.volume = vol;
-      if(vol >= 0.5) clearInterval(fade);
+      if(music.volume < 0.48){
+        music.volume = Math.min(music.volume + 0.008, 0.5);
+      } else {
+        music.volume = 0.5;
+        clearInterval(fade);
+      }
     }, 80);
   }
 
   function dismissEntry(){
-    // play music
-    music.play().then(fadeIn).catch(function(){});
-    // fade out entry screen
     entry.classList.add('hide');
-    // remove from DOM after transition
     setTimeout(function(){ entry.style.display='none'; }, 2000);
+
+    // Android Chrome: must call play() synchronously inside touch handler
+    music.volume = 0;
+    var p = music.play();
+    if(p !== undefined){
+      p.then(fadeIn).catch(function(e){
+        console.warn('play failed:', e);
+      });
+    } else {
+      fadeIn();
+    }
   }
 
-  // Wait for fonts/page to settle, then listen for first touch on entry screen
-  entry.addEventListener('touchstart', dismissEntry, {once:true});
+  // Use touchend (not touchstart) — more reliable on Android Chrome
+  entry.addEventListener('touchend', function(e){
+    e.preventDefault();
+    dismissEntry();
+  }, {once:true, passive:false});
+
+  // Fallback for desktop
   entry.addEventListener('click', dismissEntry, {once:true});
 })();
 </script>
